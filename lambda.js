@@ -2,12 +2,15 @@ function generateAnalyticsReporterData (event, context, callback)
 {
     buildEnvFromParamterStore(function()
     {
-        var reports = [];
+        /// hardcoded default
+        var reports = [{"id":"ga:147714046","path":"analytics"},{"id":"ga:147749852","path":"analytics/gobierno"},{"id":"ga:147777730","path":"analytics/usagov"}];
+        /// reports overridable by lambda function params
         if ( event.ANALYTICS_REPORTS ) 
         {
             reports = JSON.parse(event.ANALYTICS_REPORTS);
+        /// reports overridable by lambda environment params
         } else if ( 'ANALYTICS_REPORTS' in process.env ) {
-            reports = JSON.parse(process.env.ANALYTICS_REPORTS);
+            reports = JSON.parse(process.env.ANALYTICS_REPORTS);            
         }
         return runReports(reports);
     });
@@ -22,7 +25,8 @@ function buildEnvFromParamterStore( next )
     /// having to edit the lambda function directly
     
     /// AWS Parameter store will be using the pattern: /APP_PREFIX + /ENV_PREFIX + /PARAM_NAME 
-    var param_prefix = "/ssg/ar/";
+    // var param_prefix = "/ssg/ar/";
+    var param_prefix = "/project_app_usa/";
     /// must begin and end in a slash
     if ( ! param_prefix.match(/\/$/) ) 
     {
@@ -91,6 +95,7 @@ function runReports( reports )
         /// each report should get it's own unique values for these params
         process.env.ANALYTICS_REPORT_IDS = reports[r].id;
         process.env.AWS_BUCKET_PATH      = reports[r].path;
+        process.env.AWS_CACHE_TIME       = 0;
 
         console.log('Report '+reports[r].id+' generating');
 
