@@ -35,7 +35,7 @@ function buildEnvFromParamterStore( next )
     if ( ! param_prefix.match(/^\//) ) 
     {
         param_prefix = '/'+param_prefix;
-    }     
+    }
     var AWS = require('aws-sdk');
     /// running this locally needs as explicit region declaration
     /// but in lambda the region is already 
@@ -55,6 +55,7 @@ function buildEnvFromParamterStore( next )
             param_prefix += '/';    
         }
     }
+    param_prefix += 'analytics_reporters/'
 
     /// get all the paramters with our prefix
     var ssm = new AWS.SSM();

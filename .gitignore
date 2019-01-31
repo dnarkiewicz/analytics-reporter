@@ -13,6 +13,7 @@ todo.txt
 npm-debug.log
 *.swp
 .git
+*lambda-deploy.zip
 
 # Track selected JSON files
 !package.json
