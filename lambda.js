@@ -2,12 +2,14 @@ function generateAnalyticsReporterData (event, context, callback)
 {
     buildEnvFromParamterStore(function()
     {
+        console.log('Collecting reports');
+
         /// hardcoded default
-        var reports = [{"id":"ga:147714046","path":"analytics"},{"id":"ga:147749852","path":"analytics/gobierno"},{"id":"ga:147777730","path":"analytics/usagov"}];
+        var reports = [{"id":"ga:147714046","path":"analytics/data"},{"id":"ga:147749852","path":"analytics/data/gobierno"},{"id":"ga:147777730","path":"analytics/data/usagov"}];
         /// reports overridable by lambda function params
-        if ( event.ANALYTICS_REPORTS ) 
+        if ( event && 'ANALYTICS_REPORTS' in event ) 
         {
-            reports = JSON.parse(event.ANALYTICS_REPORTS);
+            reports = event.ANALYTICS_REPORTS;
         /// reports overridable by lambda environment params
         } else if ( 'ANALYTICS_REPORTS' in process.env ) {
             reports = JSON.parse(process.env.ANALYTICS_REPORTS);            
@@ -18,6 +20,7 @@ function generateAnalyticsReporterData (event, context, callback)
 
 function buildEnvFromParamterStore( next )
 {
+    console.log('Trying to import data from Paramter Store');
 
     /// first we must pull out our config parameters directly from ParameterStore
     /// we doesn't rely on lambda function having preconfigured env vars
@@ -44,6 +47,8 @@ function buildEnvFromParamterStore( next )
         AWS.config.update({region:process.env.AWS_REGION});
     } else if ( 'AWS_DEFAULT_REGION' in process.env ) {
         AWS.config.update({region:process.env.AWS_DEFAULT_REGION});
+    } else {
+        AWS.config.update({region:'us-east-1'});
     }
     
     /// prefix the param store keys correctly with environment name
@@ -89,6 +94,8 @@ function buildEnvFromParamterStore( next )
 
 function runReports( reports )
 {
+    console.log('Trying to run reports');
+
     /// step through and run each report
     var successes = 0;
     for ( var r=0; r<reports.length; r++ )
@@ -105,6 +112,7 @@ function runReports( reports )
         /// start a separate process to handle each report, I think we will need these 
         /// to be blocking as well, I'm not quite sure why
         const execSync = require('child_process').execSync;
+        console.log('Running report '+reports[r].id);
         execSync('./bin/analytics --publish', function (error, stdout, stderr) {
             if ( error )
             {
@@ -113,6 +121,7 @@ function runReports( reports )
                 successes++;
                 console.log('Report '+reports[r].id+' SUCCESS: '+stdout);
             }
+            console.log('Report '+reports[r].id+' stderr: '+stderr);
         });
     }
     return successes;

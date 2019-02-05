@@ -1,6 +1,6 @@
 # maybe a zip file was passed in?
 if [ -z "$1" ]; then 
-    OUTFILE='./usagov-analytics-lambda-deploy.zip';
+    OUTFILE='./lambda-deploy.zip';
 else
     OUTFILE="$1";
 fi
@@ -12,10 +12,11 @@ rm -rf ./node_modules
 # so we just get rid of it as a dependency 
 # now the node_module directory is smaller for deploy
 # this breaks local builds, however, so we put it back when done
-#sed -i.bkp '/"aws-sdk"/d' ./package.json
+sed -i.bkp '/"aws-sdk"/d' ./package.json
 #npm install aws-sdk@2.395.0
 rm -f ./package-lock.json
-npm install --no-optional --production
+npm install --production
+#npm install --no-optional --production
 
 if [ -f "$OUTFILE" ]; then
     rm $OUTFILE;
@@ -31,7 +32,8 @@ zip -r $OUTFILE \
     lambda.js
 
 # put back original package file 
-# mv package.json.bkp package.json
+mv package.json.bkp package.json
+npm install
 
 # deploy this out - this is just test code for local dev
-# aws lambda update-function-code --function-name analyticsReporterTest --zip-file fileb://$OUTFILE
+#aws lambda update-function-code --function-name analyticsReporterTest --zip-file fileb://$OUTFILE
