@@ -36,4 +36,4 @@ mv package.json.bkp package.json
 npm install
 
 # deploy this out - this is just test code for local dev
-#aws lambda update-function-code --function-name analyticsReporterTest --zip-file fileb://$OUTFILE
+aws lambda update-function-code --function-name analyticsReporterTest --zip-file fileb://$OUTFILE

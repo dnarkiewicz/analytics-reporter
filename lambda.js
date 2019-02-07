@@ -1,26 +1,35 @@
-function generateAnalyticsReporterData (event, context, callback) 
+// const minimist = require("minimist");
+// const run = require("./index.js").run;
+// const reportRunner = async (options) => { return run() };
+// const reportRunner = async (options) => {
+//     return new Promise(() => { console.log(process.env) });
+// }
+
+const generateAnalyticsReporterData = async (event) =>
 {
+    console.log('func generateAnalyticsReporterData START');
     buildEnvFromParamterStore(function()
     {
-        console.log('Collecting reports');
-
         /// hardcoded default
-        var reports = [{"id":"ga:147714046","path":"analytics/data"},{"id":"ga:147749852","path":"analytics/data/gobierno"},{"id":"ga:147777730","path":"analytics/data/usagov"}];
+        // var reports = [{"id":"ga:147714046","path":"analytics/data"},{"id":"ga:147749852","path":"analytics/data/gobierno"},{"id":"ga:147777730","path":"analytics/data/usagov"}];
+        var reports = [{"id":"ga:147714046","path":"analytics/data"}];
         /// reports overridable by lambda function params
-        if ( event && 'ANALYTICS_REPORTS' in event ) 
-        {
-            reports = event.ANALYTICS_REPORTS;
-        /// reports overridable by lambda environment params
-        } else if ( 'ANALYTICS_REPORTS' in process.env ) {
-            reports = JSON.parse(process.env.ANALYTICS_REPORTS);            
-        }
-        return runReports(reports);
+        // if ( event && 'ANALYTICS_REPORTS' in event ) 
+        // {
+        //     reports = event.ANALYTICS_REPORTS;
+        // /// reports overridable by lambda environment params
+        // } else if ( 'ANALYTICS_REPORTS' in process.env ) {
+        //     reports = JSON.parse(process.env.ANALYTICS_REPORTS);            
+        // }
+        return runReports(reports).catch((err) => { console.log(err); });
     });
+
+    return "func generateAnalyticsReporterData FIN";
 }
 
 function buildEnvFromParamterStore( next )
 {
-    console.log('Trying to import data from Paramter Store');
+    console.log('func buildEnvFromParamterStore START');
 
     /// first we must pull out our config parameters directly from ParameterStore
     /// we doesn't rely on lambda function having preconfigured env vars
@@ -90,11 +99,16 @@ function buildEnvFromParamterStore( next )
         next();
     });
 
+    console.log('func buildEnvFromParamterStore FIN');
 }
 
-function runReports( reports )
+const runReports = async ( reports ) =>
 {
-    console.log('Trying to run reports');
+    console.log('func runReports START');
+    process.env.AWS_CACHE_TIME       = 0;
+
+    process.env.ANALYTICS_REPORT_IDS = 'ga:147714046';
+    process.env.AWS_BUCKET_PATH      = 'analytics/data';
 
     /// step through and run each report
     var successes = 0;
@@ -111,22 +125,23 @@ function runReports( reports )
         /// so even though we are already in node, we will drop out to commandline and 
         /// start a separate process to handle each report, I think we will need these 
         /// to be blocking as well, I'm not quite sure why
-        const execSync = require('child_process').execSync;
+        
         console.log('Running report '+reports[r].id);
-        execSync('./bin/analytics --publish', function (error, stdout, stderr) {
-            if ( error )
-            {
-                console.log('Report '+reports[r].id+' ERROR '+ error);
-            } else {
-                successes++;
-                console.log('Report '+reports[r].id+' SUCCESS: '+stdout);
-            }
-            console.log('Report '+reports[r].id+' stderr: '+stderr);
-        });
+        await runReport( reports[r] );
     }
+    console.log('func runReports FIN');
     return successes;
 }
 
-exports.generateAnalyticsReporterData = generateAnalyticsReporterData;
-exports.buildEnvFromParamterStore = buildEnvFromParamterStore;
-exports.runReports = runReports;
+const runReport = async (report) => {
+    const util = require('util');
+    const exec = util.promisify(require('child_process').exec);
+    const { stdout, stderr } = await exec('./bin/analytics --publish');
+    if ( stderr ) 
+    {
+        console.log('Report '+report.id+' STDERR: '+stderr);
+    }
+    console.log('Report '+report.id+' STDOUT: '+stdout);
+}
+
+exports.generateAnalyticsReporterData = generateAnalyticsReporterData
