@@ -3,6 +3,8 @@ const exec = util.promisify(require('child_process').exec);
 
 const generateAnalyticsReporterData = async (event) =>
 {
+    console.log('GenerateAnalyticsReport triggered');
+
     await buildEnvFromParamterStore();
 
     /// parameters may be right in env, or may be part of sns message
@@ -10,7 +12,11 @@ const generateAnalyticsReporterData = async (event) =>
     if ( event && 'Records' in event && 0 in event.Records && 'Sns' in event.Records[0] && 'Message' in event.Records[0].Sns )
     {
         /// Message from Sns may be a json object
-        params = JSON.parse( event.Records[0].Sns.Message );
+        try {
+            params = JSON.parse( event.Records[0].Sns.Message );
+        } catch (err) {
+            console.log('SNS Message is not json, ignoring input');
+        }
     }
 
     var reports = [
