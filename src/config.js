@@ -27,7 +27,8 @@ module.exports = {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     s3ForcePathStyle: process.env.AWS_S3_FORCE_STYLE_PATH,
-    signatureVersion: process.env.AWS_SIGNATURE_VERSION
+    signatureVersion: process.env.AWS_SIGNATURE_VERSION,
+    sessionToken: process.env.AWS_SESSION_TOKEN
   },
 
   account: {

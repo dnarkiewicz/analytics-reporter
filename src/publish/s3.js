@@ -9,7 +9,8 @@ const conf = {
   secretAccessKey: config.aws.secretAccessKey,
   endpoint: config.aws.endpoint,
   s3ForcePathStyle: config.aws.s3ForcePathStyle,
-  signatureVersion: config.aws.signatureVersion
+  signatureVersion: config.aws.signatureVersion,
+  sessionToken: config.aws.sessionToken
 }
 
 const S3 = new AWS.S3(conf)
