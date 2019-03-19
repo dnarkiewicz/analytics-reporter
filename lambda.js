@@ -9,10 +9,15 @@ const generateAnalyticsReporterData = async (event) =>
 
     /// parameters may be right in env, or may be part of sns message
     var params = event;
-    if ( event && 'Records' in event && 0 in event.Records && 'Sns' in event.Records[0] && 'Message' in event.Records[0].Sns )
+    if ( event && 'Records' in event 
+         && 0 in event.Records 
+         && 'Sns' in event.Records[0] 
+         && 'Message' in event.Records[0].Sns 
+         && event.Records[0].Sns.Message )
     {
         /// Message from Sns may be a json object
         try {
+            console.log('Parameters From SNS:'+event.Records[0].Sns.Message);
             params = JSON.parse( event.Records[0].Sns.Message );
         } catch (err) {
             console.log('SNS Message is not json, ignoring input');
@@ -75,15 +80,8 @@ const runReport = async (report, frequency) =>
 
 const buildEnvFromParamterStore = async () =>
 {
-    var param_prefix = "/project_app_usa/";
-    if ( ! param_prefix.match(/\/$/) ) 
-    {
-        param_prefix += '/';    
-    }
-    if ( ! param_prefix.match(/^\//) ) 
-    {
-        param_prefix = '/'+param_prefix;
-    }
+
+    /// set region
     var AWS = require('aws-sdk');
     if ( 'AWS_REGION' in process.env )
     {
@@ -93,22 +91,38 @@ const buildEnvFromParamterStore = async () =>
     } else {
         AWS.config.update({region:'us-east-1'});
     }
+
+    var param_prefix = "/project_app_usa/";
+
+    /// wrap in //
+    if ( ! param_prefix.match(/\/$/) )
+    {
+        param_prefix += '/';
+    }
+    if ( ! param_prefix.match(/^\//) )
+    {
+        param_prefix = '/'+param_prefix;
+    }
+
+    var env_prefix = 'stg';
     if ( 'ENVIRONMENT' in process.env )
     {
-        param_prefix += process.env.ENVIRONMENT;
-        if ( ! param_prefix.match(/\/$/) ) 
-        {
-            param_prefix += '/';    
-        }
+        env_prefix = process.env.ENVIRONMENT;
     }
-    param_prefix += 'analytics_reporters/'
+    param_prefix += env_prefix;
+    if ( ! param_prefix.match(/\/$/) )
+    {
+        param_prefix += '/';
+    }
+
+    param_prefix += 'analytics_reporters/';
 
     var ssm = new AWS.SSM();
-    return ssm.getParametersByPath({ 
+    return ssm.getParametersByPath({
         Path: param_prefix,
         Recursive: true,
         WithDecryption: true,
-    }).promise().then( data => {        
+    }).promise().then( data => {
         for ( var i=0; i<data.Parameters.length; i++ )
         {
             var envVar = data.Parameters[i].Name.replace(param_prefix,"");
