@@ -5,8 +5,6 @@ const generateAnalyticsReporterData = async (event) =>
 {
     console.log('GenerateAnalyticsReport triggered');
 
-    await buildEnvFromParamterStore();
-
     /// parameters may be right in env, or may be part of sns message
     var params = event;
     if ( event && 'Records' in event 
@@ -23,6 +21,17 @@ const generateAnalyticsReporterData = async (event) =>
             console.log('SNS Message is not json, ignoring input');
         }
     }
+
+    var env_prefix = null;
+    if ( params && 'ENVIRONMENT' in params ) 
+    {
+        env_prefix = params.ENVIRONMENT;
+    } else if ( 'ENVIRONMENT' in process.env ) {
+        env_prefix = process.env.ENVIRONMENT;
+    } else {
+        env_prefix = 'prod';
+    }
+    await buildEnvFromParamterStore(env_prefix);
 
     var reports = [
         {"id":"ga:147714046","path":"analytics/raw-data"},
@@ -78,7 +87,7 @@ const runReport = async (report, frequency) =>
 }
 
 
-const buildEnvFromParamterStore = async () =>
+const buildEnvFromParamterStore = async ( env_prefix ) =>
 {
 
     /// set region
@@ -104,11 +113,7 @@ const buildEnvFromParamterStore = async () =>
         param_prefix = '/'+param_prefix;
     }
 
-    var env_prefix = 'stg';
-    if ( 'ENVIRONMENT' in process.env )
-    {
-        env_prefix = process.env.ENVIRONMENT;
-    }
+    /// append environment name
     param_prefix += env_prefix;
     if ( ! param_prefix.match(/\/$/) )
     {
