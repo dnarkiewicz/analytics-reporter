@@ -44,6 +44,8 @@ const generateAnalyticsReporterData = async (event) =>
         reports = JSON.parse(process.env.ANALYTICS_REPORTS);    
     }
 
+    process.env.ANALYTICS_REPORTS_PATH = './reports/usagov-analytics.json';
+
     var frequency = null;
     if ( params && "FREQUENCY" in params )
     {
