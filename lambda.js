@@ -53,6 +53,13 @@ const generateAnalyticsReporterData = async (event) =>
     }
 
     await runReports(reports,frequency);
+
+    // var csv = false;
+    // if ( params && "CSV" in params )
+    // {
+    //     csv = params.CSV;
+    // }
+    // await runReports(reports,frequency,csv);
 }
 
 const runReports = async ( reports, frequency ) =>
@@ -73,18 +80,33 @@ const runReport = async (report, frequency) =>
     {
         analyticsCommand += ' --frequency '+frequency;
     }
+    // if ( csv ) 
+    // {
+    //     analyticsCommand += ' --csv';
+    // }
 
     process.env.AWS_CACHE_TIME       = 0;  
     process.env.ANALYTICS_REPORT_IDS = report.id;
     process.env.AWS_BUCKET_PATH      = report.path;
     
-    console.log(analyticsCommand);
-    const { stdout, stderr } = await exec(analyticsCommand);
-    if ( stderr ) 
+    var analyticsCommandJSON = analyticsCommand;
+    console.log(analyticsCommandJSON);
+    const { stdoutJson, stderrJson } = await exec(analyticsCommandJSON);
+    if ( stderrJson ) 
     {
-        console.log('Report '+report.id+' errored: '+stderr);
+        console.log('Report '+report.id+' errored: '+stderrJson);
     }
-    console.log('Report '+report.id+' generated '+stdout);
+    console.log('Report '+report.id+' generated '+stdoutJson);
+
+    analyticsCommandCSV = analyticsCommand + ' --csv';
+    console.log(analyticsCommandCSV);
+    const { stdoutCSV, stderrCSV } = await exec(analyticsCommandCSV);
+    if ( stderrJson ) 
+    {
+        console.log('Report '+report.id+' errored: '+stderrCSV);
+    }
+    console.log('Report '+report.id+' generated '+stdoutCSV);
+
     return true;
 }
 
