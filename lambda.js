@@ -94,18 +94,18 @@ const runReport = async (report, frequency) =>
     const { stdoutJson, stderrJson } = await exec(analyticsCommandJSON);
     if ( stderrJson ) 
     {
-        console.log('Report '+report.id+' errored: '+stderrJson);
+        console.log('JSON Report '+report.id+' errored: '+stderrJson);
     }
-    console.log('Report '+report.id+' generated '+stdoutJson);
+    console.log('JSON Report '+report.id+' generated '+stdoutJson);
 
     analyticsCommandCSV = analyticsCommand + ' --csv';
     console.log(analyticsCommandCSV);
     const { stdoutCSV, stderrCSV } = await exec(analyticsCommandCSV);
     if ( stderrJson ) 
     {
-        console.log('Report '+report.id+' errored: '+stderrCSV);
+        console.log('CSV Report '+report.id+' errored: '+stderrCSV);
     }
-    console.log('Report '+report.id+' generated '+stdoutCSV);
+    console.log('CSV Report '+report.id+' generated '+stdoutCSV);
 
     return true;
 }
