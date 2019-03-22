@@ -91,21 +91,29 @@ const runReport = async (report, frequency) =>
     
     var analyticsCommandJSON = analyticsCommand;
     console.log(analyticsCommandJSON);
-    const { stdoutJson, stderrJson } = await exec(analyticsCommandJSON);
-    if ( stderrJson ) 
-    {
-        console.log('JSON Report '+report.id+' errored: '+stderrJson);
-    }
-    console.log('JSON Report '+report.id+' generated '+stdoutJson);
+    await exec(analyticsCommandJSON, { stdio: 'inherit' });
+    console.log('JSON Report '+report.id+' generation finished'); 
 
     analyticsCommandCSV = analyticsCommand + ' --csv';
     console.log(analyticsCommandCSV);
-    const { stdoutCSV, stderrCSV } = await exec(analyticsCommandCSV);
-    if ( stderrJson ) 
-    {
-        console.log('CSV Report '+report.id+' errored: '+stderrCSV);
-    }
-    console.log('CSV Report '+report.id+' generated '+stdoutCSV);
+    await exec(analyticsCommandCSV, { stdio: 'inherit' });
+    console.log('CSV Report '+report.id+' generation finished'); 
+
+    // const { stdoutJSON, stderrJSON } = await exec(analyticsCommandJSON);
+    // if ( stderrJSON )
+    // {
+    //     console.log('JSON Report '+report.id+' errored: '+stderrJSON);
+    // }
+    // console.log('JSON Report '+report.id+' generated '+stdoutJSON);
+
+    // analyticsCommandCSV = analyticsCommand + ' --csv';
+    // console.log(analyticsCommandCSV);
+    // const { stdoutCSV, stderrCSV } = await exec(analyticsCommandCSV);
+    // if ( stderrJson ) 
+    // {
+    //     console.log('CSV Report '+report.id+' errored: '+stderrCSV);
+    // }
+    // console.log('CSV Report '+report.id+' generated '+stdoutCSV);
 
     return true;
 }
